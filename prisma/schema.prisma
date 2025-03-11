@@ -14,6 +14,7 @@ model User {
   password        String
   role            Role      @default(PARTICIPANT)
   dateInscription DateTime  @default(now())
+  profilePicture  String?   // Champ pour la photo de profil, optionnel
 
   eventsOrganized Event[]   @relation("Organizer")
   bookings        Booking[]
@@ -36,9 +37,9 @@ model Event {
   dateFin            DateTime
   heureDebut         String
   heureFin           String
-  lieu              String
+  lieu               String
   fraisParticipation Decimal?
-  capacite          Int
+  capacite           Int
 
   typeId  Int
   type    TypeEvent  @relation(fields: [typeId], references: [id], onDelete: Cascade)
@@ -48,6 +49,7 @@ model Event {
 
   bookings        Booking[]
   collaborations  Collaboration[]
+  visuals         Visual[]
 }
 
 model Booking {
@@ -79,6 +81,14 @@ model Collaboration {
   @@unique([organizerSecondaireId, eventId]) // Un organisateur ne peut collaborer qu'une fois sur un événement
 }
 
+model Visual {
+  id        Int      @id @default(autoincrement())
+  url       String
+  type      VisualType
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   ADMIN
   ORGANISATEUR
@@ -89,4 +99,9 @@ enum BookingStatus {
   EN_ATTENTE
   CONFIRME
   ANNULE
+}
+
+enum VisualType {
+  PHOTO
+  VIDEO
 }

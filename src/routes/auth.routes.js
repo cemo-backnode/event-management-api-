@@ -23,6 +23,10 @@ router.post("/refresh-token", refreshToken);
 router.post(
   "/me/profile-picture",
   authMiddleware,
+  (req, res, next) => {
+    req.uploadType = "profilePicture";
+    next();
+  },
   upload.single("profilePicture"),
   updateProfilePicture
 );
