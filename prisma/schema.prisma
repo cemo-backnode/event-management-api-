@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  email           String    @unique
+  password        String
+  role            Role      @default(PARTICIPANT)
+  dateInscription DateTime  @default(now())
+
+  eventsOrganized Event[]   @relation("Organizer")
+  bookings        Booking[]
+  
+  collaborations          Collaboration[] @relation("OrganizerPrincipalCollab")
+  secondaryCollaborations Collaboration[] @relation("OrganizerSecondaireCollab")
+}
+
+model TypeEvent {
+  id       Int     @id @default(autoincrement())
+  intitule String  @unique
+  events   Event[]
+}
+
+model Event {
+  id                 Int       @id @default(autoincrement())
+  titre              String
+  description        String?
+  dateDebut          DateTime
+  dateFin            DateTime
+  heureDebut         String
+  heureFin           String
+  lieu              String
+  fraisParticipation Decimal?
+  capacite          Int
+
+  typeId  Int
+  type    TypeEvent  @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  organizerId Int
+  organizer   User     @relation("Organizer", fields: [organizerId], references: [id], onDelete: Cascade)
+
+  bookings        Booking[]
+  collaborations  Collaboration[]
+}
+
+model Booking {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  eventId            Int
+  dateParticipation  DateTime
+  heureDebut         String
+  heureFin           String
+  statut             BookingStatus @default(EN_ATTENTE)
+  qrCode             String       // Lien ou donnée du QR Code
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId, dateParticipation]) // Empêche les doublons de réservation pour un même jour
+}
+
+model Collaboration {
+  id                     Int    @id @default(autoincrement())
+  organizerPrincipalId   Int
+  organizerSecondaireId  Int
+  eventId                Int
+
+  organizerPrincipal   User  @relation("OrganizerPrincipalCollab", fields: [organizerPrincipalId], references: [id], onDelete: Cascade)
+  organizerSecondaire  User  @relation("OrganizerSecondaireCollab", fields: [organizerSecondaireId], references: [id], onDelete: Cascade)
+  event                Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([organizerSecondaireId, eventId]) // Un organisateur ne peut collaborer qu'une fois sur un événement
+}
+
+enum Role {
+  ADMIN
+  ORGANISATEUR
+  PARTICIPANT
+}
+
+enum BookingStatus {
+  EN_ATTENTE
+  CONFIRME
+  ANNULE
+}
