@@ -1,4 +1,6 @@
 import express from "express";
+import { body } from "express-validator";
+import validate from "../middlewares/validationMiddleware.js";
 import {
   signup,
   login,
@@ -13,8 +15,27 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.post("/signup", signup);
-router.post("/login", login);
+router.post(
+  "/signup",
+  validate([
+    body("username").notEmpty().withMessage("Le nom d'utilisateur est requis"),
+    body("email").isEmail().withMessage("Email invalide"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+  ]),
+  signup
+);
+
+router.post(
+  "/login",
+  validate([
+    body("email").isEmail().withMessage("Email invalide"),
+    body("password").notEmpty().withMessage("Le mot de passe est requis"),
+  ]),
+  login
+);
+
 router.get("/me", authMiddleware, me);
 router.put("/me", authMiddleware, updateMe);
 router.post("/refresh-token", refreshToken);

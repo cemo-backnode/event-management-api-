@@ -1,5 +1,7 @@
 // 📌 src/routes/event.routes.js - Routes pour les événements avec filtres, tri et pagination
 import express from "express";
+import { body } from "express-validator";
+import validate from "../middlewares/validationMiddleware.js";
 import {
   createEvent,
   getEvents,
@@ -12,11 +14,16 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-// Création d'un événement (Organisateur/Admin)
+// Création d'un événement avec validation et rôle "organisateur"
 router.post(
   "/create",
   authMiddleware,
   checkRole(["ADMIN", "ORGANISATEUR"]),
+  validate([
+    body("titre").notEmpty().withMessage("Le titre est requis"),
+    body("dateDebut").isISO8601().withMessage("Format de date invalide"),
+    body("lieu").notEmpty().withMessage("Le lieu est requis"),
+  ]),
   createEvent
 );
 
@@ -37,6 +44,6 @@ router.post(
 router.get("/", getEvents);
 
 // Suppression d'un événement (Organisateur/Admin)
-router.delete("/:id", authMiddleware, deleteEvent);
+router.delete("/:id", authMiddleware, checkRole(["ADMIN"]), deleteEvent);
 
 export default router;

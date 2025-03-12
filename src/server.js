@@ -5,6 +5,11 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/auth.routes.js";
+import eventRoutes from "./routes/event.routes.js";
+import bookingRoutes from "./routes/booking.routes.js";
+import invitationRoutes from "./routes/invitation.routes.js";
+import walletRoutes from "./routes/wallet.routes.js";
+import collaborationRoutes from "./routes/collaboration.routes.js"; // Importer les routes de collaboration
 
 // Charger les variables d'environnement depuis le fichier .env
 dotenv.config();
@@ -30,6 +35,21 @@ const PORT = process.env.PORT || 3000;
 // Utiliser les routes d'authentification
 app.use("/auth", authRoutes);
 
+// Utiliser les routes des événements
+app.use("/events", eventRoutes);
+
+// Utiliser les routes de réservation
+app.use("/bookings", bookingRoutes);
+
+// Utiliser les routes d'invitation
+app.use("/invitations", invitationRoutes);
+
+// Utiliser les routes de portefeuille
+app.use("/wallet", walletRoutes);
+
+// Utiliser les routes de collaboration
+app.use("/collaborations", collaborationRoutes);
+
 // Exemple de route
 app.get("/", (req, res) => {
   res.send("Welcome to the Event Management API");
@@ -37,7 +57,7 @@ app.get("/", (req, res) => {
 
 // Démarrer le serveur
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}, http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}, click  http://localhost:${PORT}`);
 });
 
 // Gestion des erreurs globales
@@ -51,4 +71,3 @@ process.on("SIGINT", async () => {
   await prisma.$disconnect();
   process.exit();
 });
-
